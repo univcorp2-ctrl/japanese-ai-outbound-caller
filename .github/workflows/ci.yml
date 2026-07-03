@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check .
+      - name: Test
+        run: pytest --cov=app --cov=scripts --cov-report=term-missing --junitxml=test-results.xml
+      - name: Compile optional worker source
+        run: python -m compileall -q app agent scripts
+      - name: Prepare research artifact
+        if: always()
+        run: |
+          mkdir -p artifacts
+          cp docs/research.md artifacts/
+          cp docs/architecture.md artifacts/
+          cp notion/AI音声電話サービス調査.md artifacts/
+          cp test-results.xml artifacts/ || true
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: japanese-ai-voice-agent-research
+          path: artifacts
+          if-no-files-found: error
