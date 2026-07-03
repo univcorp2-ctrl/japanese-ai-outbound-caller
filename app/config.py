@@ -9,14 +9,12 @@ class Settings(BaseSettings):
     database_path: str = "data/calls.db"
     dry_run: bool = True
     phone_hash_pepper: str = "development-only-pepper"
-
     enforce_business_hours: bool = True
     business_timezone: str = "Asia/Tokyo"
     business_hour_start: int = 9
     business_hour_end: int = 19
     max_calls_per_day: int = 20
     recipient_cooldown_days: int = 30
-
     livekit_url: str = ""
     livekit_api_key: str = ""
     livekit_api_secret: str = ""
