@@ -23,7 +23,6 @@ def sync_markdown(path: Path) -> str:
             "NOTION_TOKEN and NOTION_PARENT_PAGE_ID are required. "
             "Store them as GitHub Actions secrets."
         )
-    markdown = path.read_text(encoding="utf-8")
     response = httpx.post(
         "https://api.notion.com/v1/pages",
         headers={
@@ -31,7 +30,7 @@ def sync_markdown(path: Path) -> str:
             "Notion-Version": notion_version,
             "Content-Type": "application/json",
         },
-        json=build_payload(parent_page_id, markdown),
+        json=build_payload(parent_page_id, path.read_text(encoding="utf-8")),
         timeout=30,
     )
     response.raise_for_status()
