@@ -9,7 +9,6 @@ COPY app ./app
 COPY agent ./agent
 COPY scripts ./scripts
 RUN pip install --no-cache-dir -e ".[voice]"
-
 RUN useradd --create-home appuser && mkdir -p /workspace/data && chown -R appuser:appuser /workspace
 USER appuser
 EXPOSE 8000
