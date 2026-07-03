@@ -33,10 +33,6 @@ class CallingPolicy:
             local_now = local_now.astimezone(ZoneInfo(self.settings.business_timezone))
         if local_now.weekday() >= 5:
             return PolicyDecision(False, "outbound calls are disabled on weekends")
-        if not (
-            self.settings.business_hour_start
-            <= local_now.hour
-            < self.settings.business_hour_end
-        ):
+        if not self.settings.business_hour_start <= local_now.hour < self.settings.business_hour_end:
             return PolicyDecision(False, "outside configured business hours")
         return PolicyDecision(True, "within configured business hours")
