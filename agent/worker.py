@@ -85,12 +85,10 @@ async def entrypoint(ctx: JobContext) -> None:
         )
     )
     await session.start(room=ctx.room, agent=JapaneseOutboundAgent(ctx, metadata))
-
-    trunk_id = os.environ["LIVEKIT_SIP_OUTBOUND_TRUNK_ID"]
     participant = await ctx.api.sip.create_sip_participant(
         api.CreateSIPParticipantRequest(
             room_name=ctx.room.name,
-            sip_trunk_id=trunk_id,
+            sip_trunk_id=os.environ["LIVEKIT_SIP_OUTBOUND_TRUNK_ID"],
             sip_call_to=metadata.phone_number,
             participant_identity=f"phone-{metadata.call_id}",
             participant_name=metadata.recipient_name,
