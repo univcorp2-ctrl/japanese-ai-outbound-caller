@@ -19,10 +19,7 @@ class Dispatcher(Protocol):
 class DryRunDispatcher:
     async def dispatch(self, metadata: dict[str, Any]) -> DispatchResult:
         call_id = str(metadata["call_id"])
-        return DispatchResult(
-            room_name=f"dry-run-{call_id}",
-            dispatch_id=f"dry-{uuid4().hex[:12]}",
-        )
+        return DispatchResult(f"dry-run-{call_id}", f"dry-{uuid4().hex[:12]}")
 
 
 class LiveKitDispatcher:
