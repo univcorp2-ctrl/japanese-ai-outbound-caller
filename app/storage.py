@@ -58,22 +58,11 @@ class SQLiteStore:
                 record,
             )
 
-    def update_dispatch(
-        self,
-        call_id: str,
-        *,
-        status: str,
-        room_name: str | None = None,
-        dispatch_id: str | None = None,
-        error: str | None = None,
-    ) -> None:
+    def update_dispatch(self, call_id: str, *, status: str, room_name: str | None = None,
+                        dispatch_id: str | None = None, error: str | None = None) -> None:
         with self._connect() as connection:
             connection.execute(
-                """
-                UPDATE calls
-                SET status = ?, room_name = ?, dispatch_id = ?, error = ?
-                WHERE id = ?
-                """,
+                "UPDATE calls SET status = ?, room_name = ?, dispatch_id = ?, error = ? WHERE id = ?",
                 (status, room_name, dispatch_id, error, call_id),
             )
 
@@ -89,19 +78,14 @@ class SQLiteStore:
             ).fetchone()
         return row is not None
 
-    def add_suppression(
-        self, hashed_phone: str, phone_masked: str, reason: str
-    ) -> None:
+    def add_suppression(self, hashed_phone: str, phone_masked: str, reason: str) -> None:
         created_at = datetime.now(UTC).isoformat()
         with self._connect() as connection:
             connection.execute(
-                """
-                INSERT INTO suppressions (phone_hash, phone_masked, reason, created_at)
+                """INSERT INTO suppressions (phone_hash, phone_masked, reason, created_at)
                 VALUES (?, ?, ?, ?)
                 ON CONFLICT(phone_hash) DO UPDATE SET
-                    reason = excluded.reason,
-                    created_at = excluded.created_at
-                """,
+                    reason = excluded.reason, created_at = excluded.created_at""",
                 (hashed_phone, phone_masked, reason, created_at),
             )
 
@@ -115,11 +99,7 @@ class SQLiteStore:
     def latest_call_for_phone(self, hashed_phone: str) -> str | None:
         with self._connect() as connection:
             row = connection.execute(
-                """
-                SELECT created_at FROM calls
-                WHERE phone_hash = ?
-                ORDER BY created_at DESC LIMIT 1
-                """,
+                "SELECT created_at FROM calls WHERE phone_hash = ? ORDER BY created_at DESC LIMIT 1",
                 (hashed_phone,),
             ).fetchone()
         return str(row["created_at"]) if row else None
