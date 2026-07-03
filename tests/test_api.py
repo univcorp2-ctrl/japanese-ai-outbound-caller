@@ -33,14 +33,12 @@ def valid_request(phone="+819012345678"):
 def test_health_and_dry_run_dispatch(tmp_path):
     client, _ = make_client(tmp_path)
     assert client.get("/healthz").json() == {"status": "ok", "dry_run": True}
-
     response = client.post("/v1/calls", json=valid_request())
     assert response.status_code == 202
     body = response.json()
     assert body["status"] == "dispatched"
     assert body["phone_masked"].endswith("5678")
     assert body["room_name"].startswith("dry-run-")
-
     fetched = client.get(f"/v1/calls/{body['id']}")
     assert fetched.status_code == 200
     assert fetched.json()["id"] == body["id"]
@@ -60,9 +58,7 @@ def test_opt_out_blocks_future_calls(tmp_path):
         json={"phone_number": "+819012345678", "reason": "no_more_calls"},
     )
     assert response.status_code == 204
-
-    blocked = client.post("/v1/calls", json=valid_request())
-    assert blocked.status_code == 409
+    assert client.post("/v1/calls", json=valid_request()).status_code == 409
 
 
 def test_internal_endpoint_requires_key(tmp_path):
@@ -76,21 +72,16 @@ def test_internal_endpoint_requires_key(tmp_path):
 
 def test_daily_limit(tmp_path):
     settings = Settings(
-        database_path=str(tmp_path / "limit.db"),
-        dry_run=True,
-        enforce_business_hours=False,
-        recipient_cooldown_days=0,
-        max_calls_per_day=1,
+        database_path=str(tmp_path / "limit.db"), dry_run=True,
+        enforce_business_hours=False, recipient_cooldown_days=0, max_calls_per_day=1,
     )
     store = SQLiteStore(settings.database_path)
     client = TestClient(create_app(settings=settings, store=store))
     assert client.post("/v1/calls", json=valid_request()).status_code == 202
-    second = client.post("/v1/calls", json=valid_request("+819012345679"))
-    assert second.status_code == 429
+    assert client.post("/v1/calls", json=valid_request("+819012345679")).status_code == 429
 
 
 def test_timestamp_is_iso8601(tmp_path):
     client, _ = make_client(tmp_path)
     body = client.post("/v1/calls", json=valid_request()).json()
-    parsed = datetime.fromisoformat(body["created_at"])
-    assert parsed.tzinfo == UTC
+    assert datetime.fromisoformat(body["created_at"]).tzinfo == UTC
